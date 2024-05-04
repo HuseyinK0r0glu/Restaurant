@@ -1,22 +1,41 @@
-import React , {useState} from 'react';
+import React , {useState , useEffect} from 'react';
 import { View,Text,StyleSheet } from 'react-native';
 import SearchBar from './components/SearchBar';
+import yelp from './api/yelp';
 
 const SearchScreen = () => {
-    const [term , setTerm] = useState('');
+    const [term , setTerm] = useState('');  
+    const [results,setResults] = useState([]);
+    const [errorMessage,setErrorMessage] = useState('');
+
+    const searchApi = async (searchTerm) => {
+        try{
+            const response = await yelp.get('/search', {
+                params: {
+                    limit: 50,
+                    term: searchTerm,
+                    location: 'san jose' 
+                 }
+            });
+            setResults(response.data.businesses);
+        }catch (e){
+            console.log(e)
+            setErrorMessage('Something went wrong');
+        }
+    };
+
+   useEffect(() => {    
+        searchApi('pasta')
+    }, [])
 
     return <View>
-<<<<<<< HEAD
         <SearchBar 
             term = {term} 
-            onTermChange = { newTerm => setTerm(newTerm)} 
-            onTermSubmit = { () => console.log('Term was submitted')}
+            onTermChange = {setTerm} 
+            onTermSubmit = {() => searchApi(term)}
         />
-=======
-        <SearchBar term = {term} onTermChange ={ newTerm => setTerm(newTerm)}/>
->>>>>>> 85cb698f18fbd1f5fe183a44731bee8ec54c7773
-        <Text>Search Screen</Text>
-        <Text>{term}</Text>
+        {errorMessage ? <Text>{errorMessage}</Text> : null}
+        <Text>We have found {results.length} results</Text>
     </View>
 }
 
